@@ -1,6 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:taskmanager/ui/screens/screen_background.dart';
+import 'package:taskmanager/ui/widgets/screen_background.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});

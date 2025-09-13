@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:taskmanager/ui/screens/login_screen.dart';
 import 'package:taskmanager/ui/screens/reset_password_screen.dart';
-import 'package:taskmanager/ui/screens/screen_background.dart';
-import 'package:taskmanager/ui/screens/sign_up_screen.dart';
+import 'package:taskmanager/ui/widgets/screen_background.dart';
+
 
 class ForgotPasswordVerifyOtpScreen extends StatefulWidget {
   const ForgotPasswordVerifyOtpScreen({super.key});
