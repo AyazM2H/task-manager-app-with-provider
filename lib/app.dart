@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:taskmanager/ui/screens/login_screen.dart';
+import 'package:taskmanager/ui/screens/main_nav_bar_holder_screen.dart';
 import 'package:taskmanager/ui/screens/splash_screen.dart';
 
 class TaskManager extends StatelessWidget {
@@ -36,7 +38,12 @@ class TaskManager extends StatelessWidget {
           ),
         )
       ),
-
+      initialRoute: SplashScreen.name,
+      routes: {
+        SplashScreen.name: (_)=> SplashScreen(),
+        LoginScreen.name: (_)=> LoginScreen(),
+        MainNavBarHolderScreen.name: (_)=> MainNavBarHolderScreen()
+      },
       title: 'Task Manager',
       home: SplashScreen(),
     );
