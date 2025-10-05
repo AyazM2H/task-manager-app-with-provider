@@ -24,14 +24,15 @@ class ApiCaller{
         return ApiResponse(
             isSuccess: true,
             statusCode: statusCode,
-            responseBody: decodedData);
+            responseData: decodedData);
       }else{
 
         final decodedData = jsonDecode(response.body);
         return ApiResponse(
             isSuccess: false,
             statusCode: statusCode,
-            responseBody: decodedData,
+            responseData: decodedData,
+          errorMessage: decodedData['data']
 
         );
 
@@ -40,43 +41,48 @@ class ApiCaller{
       return ApiResponse(
         isSuccess: false,
         statusCode: -1,
-        responseBody: null,
+        responseData: null,
         errorMessage: e.toString()
       );
     }
   }
 
-  static Future<ApiResponse> _postRequest({required String url, Map<String, dynamic>? body}) async{
+  static Future<ApiResponse> postRequest({required String url, Map<String, dynamic>? body}) async{
     
     try {
       Uri uri = Uri.parse(url);
 
       _loggerRequest(url, body:  body);
-      Response response = await post(uri);
+      Response response = await post(uri,
+      headers: {'content-type': 'application/json'},
+        body: jsonEncode(body)
+
+      );
 
       _loggerResponse(url, response);
       int statusCode = response.statusCode;
       
       if(statusCode == 200 || statusCode == 201){
-        final decodedJson = jsonDecode(response.body);
+        final decodedData = jsonDecode(response.body);
         return ApiResponse(
             isSuccess: true,
             statusCode: statusCode,
-            responseBody: decodedJson
+            responseData: decodedData,
         );
       }else{
-        final decodedJson = jsonDecode(response.body);
+        final decodedData = jsonDecode(response.body);
         return ApiResponse(
             isSuccess: false,
             statusCode: statusCode,
-            responseBody: decodedJson
+            responseData: decodedData,
+            errorMessage: decodedData['data']
         );
       }
     } on Exception catch (e) {
       return ApiResponse(
           isSuccess: false,
           statusCode: -1,
-          responseBody: null
+          responseData: null
       );
     }
     
@@ -101,13 +107,13 @@ class ApiCaller{
 class ApiResponse{
   final bool isSuccess;
   final int statusCode;
-  final dynamic responseBody;
+  final dynamic responseData;
   final String ? errorMessage;
 
   ApiResponse({
     required this.isSuccess,
     required this.statusCode,
-    required this.responseBody,
+    required this.responseData,
     this.errorMessage = 'Something went wrong'
   });
 }

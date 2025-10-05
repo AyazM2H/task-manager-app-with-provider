@@ -1,6 +1,12 @@
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:taskmanager/data/services/api_caller.dart';
+import 'package:taskmanager/data/utils/urls.dart';
 import 'package:taskmanager/ui/widgets/screen_background.dart';
+import 'package:taskmanager/ui/widgets/snack_bar_msg.dart';
+
+import '../widgets/center_progress_indicator.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -18,6 +24,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController _passwordTEControler = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  bool signUpInProgress = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,6 +35,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             padding: const EdgeInsets.all(16),
             child: Form(
               key: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -36,45 +45,82 @@ class _SignUpScreenState extends State<SignUpScreen> {
           
                   TextFormField(
                     controller: _emailTEControler,
+                    textInputAction: TextInputAction.next,
                     decoration: InputDecoration(
                       hintText: 'Email',
                     ),
+                    validator: (String? value){
+                      String input = value ?? '';
+                      if(EmailValidator.validate(input) == false){
+                        return 'Please enter a valid email';
+                      }
+                      return null;
+                    }
                   ),
-                  const SizedBox(height: 4,),
+                  const SizedBox(height: 8,),
                   TextFormField(
                     controller: _fnameTEControler,
-                    obscureText: true,
+                      textInputAction: TextInputAction.next,
                     decoration: InputDecoration(
                       hintText: 'First Name',
                     ),
+                      validator: (String? value){
+                        if(value?.trim().isEmpty ?? true){
+                          return 'Please enter your first name';
+                        }
+                        return null;
+                      }
                   ),
-                  const SizedBox(height: 4,),
+                  const SizedBox(height: 8,),
                   TextFormField(
                     controller: _lnameTEControler,
-                    obscureText: true,
+                      textInputAction: TextInputAction.next,
                     decoration: InputDecoration(
                       hintText: 'Last Name',
                     ),
+                      validator: (String? value){
+                        if(value?.trim().isEmpty ?? true){
+                          return 'Please enter your last name';
+                        }
+                        return null;
+                      }
                   ),
-                  const SizedBox(height: 4,),
+                  const SizedBox(height: 8,),
                   TextFormField(
                     controller: _mobileTEControler,
-                    obscureText: true,
+                      textInputAction: TextInputAction.next,
+                    keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
                       hintText: 'Mobile',
                     ),
+                      validator: (String? value){
+                        if(value?.trim().isEmpty ?? true){
+                          return 'Please enter your mobile number';
+                        }
+                        return null;
+                      }
                   ),
-                  const SizedBox(height: 4,),
+                  const SizedBox(height: 8,),
                   TextFormField(
                     controller: _passwordTEControler,
                     obscureText: true,
                     decoration: InputDecoration(
                       hintText: 'Password',
                     ),
+                      validator: (String? value){
+                        if((value?.length ?? 0) <= 6){
+                          return 'Enter a password more than 6 letters';
+                        }
+                        return null;
+                      }
                   ),
                   const SizedBox(height: 16,),
-                  FilledButton(onPressed: (){},
-                      child: Icon(Icons.arrow_circle_right_outlined)),
+                  Visibility(
+                    visible: signUpInProgress == false,
+                    replacement: CenterProgressIndicator(),
+                    child: FilledButton(onPressed: _0nTapSubmitButton,
+                        child: Icon(Icons.arrow_circle_right_outlined)),
+                  ),
                   const SizedBox(height: 32,),
           
           
@@ -105,8 +151,45 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
+  void _0nTapSubmitButton(){
+    if(_formKey.currentState!.validate()){
+      _signUp();
+    }
+  }
   void _onTapLoginButton(){
     Navigator.pop(context);
+  }
+
+  Future<void> _signUp() async{
+    signUpInProgress = true;
+    setState(() {});
+    Map<String, dynamic> requestBody = {
+      "email":_emailTEControler.text.trim(),
+      "firstName":_fnameTEControler.text.trim(),
+      "lastName":_lnameTEControler.text.trim(),
+      "mobile":_mobileTEControler.text.trim(),
+      "password":_passwordTEControler.text
+    };
+
+    final ApiResponse response = await ApiCaller.postRequest(
+      url: Urls.regitrationUrl,
+      body: requestBody
+    );
+    signUpInProgress = false;
+    setState(() {});
+    if(response.isSuccess){
+      _clearTextField();
+      showSnackBar(context, response.errorMessage!);
+    } else{
+      showSnackBar(context, response.errorMessage!);
+    }
+  }
+  void _clearTextField(){
+    _emailTEControler.clear();
+    _fnameTEControler.clear();
+    _lnameTEControler.clear();
+    _mobileTEControler.clear();
+    _passwordTEControler.clear();
   }
 
   @override
@@ -119,3 +202,4 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 }
+

@@ -1,8 +1,13 @@
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:taskmanager/data/services/api_caller.dart';
+import 'package:taskmanager/data/utils/urls.dart';
 import 'package:taskmanager/ui/screens/main_nav_bar_holder_screen.dart';
+import 'package:taskmanager/ui/widgets/center_progress_indicator.dart';
 import 'package:taskmanager/ui/widgets/screen_background.dart';
 import 'package:taskmanager/ui/screens/sign_up_screen.dart';
+import 'package:taskmanager/ui/widgets/snack_bar_msg.dart';
 
 import 'forgot_password_verify_email.dart';
 
@@ -21,6 +26,8 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController _passwordTEControler = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  bool loginInProgress = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,6 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.all(16),
           child: Form(
             key: _formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -40,18 +48,35 @@ class _LoginScreenState extends State<LoginScreen> {
                   decoration: InputDecoration(
                     hintText: 'Email',
                   ),
+                    validator: (String? value){
+                      String input = value ?? '';
+                      if(EmailValidator.validate(input) == false){
+                        return 'Please enter a valid email';
+                      }
+                      return null;
+                    }
                 ),
-                const SizedBox(height: 4,),
+                const SizedBox(height: 8,),
                 TextFormField(
                   controller: _passwordTEControler,
                   obscureText: true,
                   decoration: InputDecoration(
                     hintText: 'Password',
                   ),
+                    validator: (String? value){
+                      if((value?.length ?? 0) <= 6){
+                        return 'Enter a password more than 6 letters';
+                      }
+                      return null;
+                    }
                 ),
                 const SizedBox(height: 16,),
-                FilledButton(onPressed: _onTapLogindButton,
-                    child: Icon(Icons.arrow_circle_right_outlined)),
+                Visibility(
+                  visible:  loginInProgress == false,
+                  replacement: CenterProgressIndicator(),
+                  child: FilledButton(onPressed: _onTapLogindButton,
+                      child: Icon(Icons.arrow_circle_right_outlined)),
+                ),
                 const SizedBox(height: 32,),
 
 
@@ -98,11 +123,34 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _onTapLogindButton(){
-    Navigator.pushNamedAndRemoveUntil(
-        context,
-        MainNavBarHolderScreen.name,
-        (predicate) => false,
+
+    if(_formKey.currentState!.validate()){
+      _login();
+    }
+  }
+
+  Future<void> _login() async{
+    loginInProgress = true;
+    setState(() {});
+    Map<String, dynamic> requestBody = {
+      "email": _emailTEControler.text.trim(),
+      "password":_passwordTEControler.text
+    };
+    final ApiResponse response = await ApiCaller.postRequest(
+        url: Urls.loginnUrl,
+      body: requestBody
     );
+    if(response.isSuccess && response.responseData['status'] == 'success'){
+      Navigator.pushNamedAndRemoveUntil(
+          context,
+          MainNavBarHolderScreen.name,
+          (predicate) => false,
+      );
+    }else{
+      loginInProgress = false;
+      setState(() {});
+      showSnackBar(context, response.errorMessage!);
+    }
   }
 
   @override
