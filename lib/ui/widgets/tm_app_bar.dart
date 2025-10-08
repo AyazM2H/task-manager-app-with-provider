@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:taskmanager/ui/controllers/auth_controller.dart';
+import 'package:taskmanager/ui/screens/login_screen.dart';
 import 'package:taskmanager/ui/screens/update_profile_screen.dart';
 
-class TMAppBar extends StatelessWidget implements PreferredSizeWidget {
+class TMAppBar extends StatefulWidget implements PreferredSizeWidget {
   const TMAppBar({
     super.key, this.fromUpdateProfile,
   });
@@ -9,12 +11,21 @@ class TMAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool? fromUpdateProfile;
 
   @override
+  State<TMAppBar> createState() => _TMAppBarState();
+
+  @override
+  // TODO: implement preferredSize
+  Size get preferredSize => Size.fromHeight(kToolbarHeight);
+}
+
+class _TMAppBarState extends State<TMAppBar> {
+  @override
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: Colors.green,
       title: GestureDetector(
         onTap: (){
-          if(fromUpdateProfile ?? false){
+          if(widget.fromUpdateProfile ?? false){
             return;
           }
           Navigator.push(
@@ -28,23 +39,24 @@ class TMAppBar extends StatelessWidget implements PreferredSizeWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Name', style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                Text(AuthController.userModel?.fullName ?? '', style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     color: Colors.white
                 )),
-                Text('Name@gmail.com', style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                Text(AuthController.userModel!.email, style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Colors.white
                 )),
               ],
             )
-        
+
           ],
         ),
       ),
-      actions: [Icon(Icons.logout, color: Colors.white,)],
+      actions: [IconButton(onPressed: _signOut, icon: Icon(Icons.logout))],
     );
   }
 
-  @override
-  // TODO: implement preferredSize
-  Size get preferredSize => Size.fromHeight(kToolbarHeight);
+  Future<void> _signOut() async{
+    await AuthController.clearUserData();
+    Navigator.pushNamedAndRemoveUntil(context, LoginScreen.name, (predicate) => false);
+  }
 }
