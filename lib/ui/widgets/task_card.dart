@@ -1,40 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:taskmanager/data/models/task_model.dart';
 
 class TaskCard extends StatelessWidget {
   const TaskCard({
-    super.key, required this.title, required this.description, required this.status, required this.color,
-  });
+    super.key, required this.taskModel});
 
-  final String title, description, status;
-  final Color color;
+  final TaskModel taskModel;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       tileColor: Colors.white,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadiusGeometry.circular(8)
+          borderRadius: BorderRadius.circular(8)
       ),
-      title: Text(title),
+      title: Text(taskModel.title),
       subtitle: Column(
         spacing: 8,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(description),
-          Text('Date: 12/01/12', style: TextStyle(
+          Text(taskModel.description),
+          const SizedBox(height: 8),
+          Text('Date: ${taskModel.createdDate}',
+            style: TextStyle(
               fontWeight: FontWeight.w600,
               color: Colors.black
           ),),
           Row(
             children: [
-              Chip(label: Text(status),
-                backgroundColor: color,
+              Chip(label: Text(taskModel.status),
+                backgroundColor: Colors.blue,
                 labelStyle: TextStyle(
                     color: Colors.white
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadiusGeometry.circular(24)
+                    borderRadius: BorderRadius.circular(24)
                 ),
               ),
               Spacer(),

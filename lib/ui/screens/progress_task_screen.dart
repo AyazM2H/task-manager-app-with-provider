@@ -20,7 +20,7 @@ class _ProgressTaskScreenState extends State<ProgressTaskScreen> {
           child: ListView.separated(
                 itemCount: 10,
               itemBuilder: (context, index){
-                  return TaskCard(title: 'Progress title', description: 'Progress description', status: 'Progress', color: Colors.green,);
+                  //return TaskCard(title: 'Progress title', description: 'Progress description', status: 'Progress', color: Colors.green,);
               },
               separatorBuilder: (context, index){
                   return SizedBox(height: 8,);

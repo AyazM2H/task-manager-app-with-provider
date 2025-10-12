@@ -20,7 +20,7 @@ class _CompletedTaskScreenState extends State<CompletedTaskScreen> {
             child: ListView.separated(
               itemCount: 10,
               itemBuilder: (context, index){
-                return TaskCard(title: 'Completed title', description: 'Completed description', status: 'Completed', color: Colors.purple,);
+                //return TaskCard(title: 'Completed title', description: 'Completed description', status: 'Completed', color: Colors.purple,);
               },
               separatorBuilder: (context, index){
                 return SizedBox(height: 8,);

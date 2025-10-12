@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:taskmanager/data/models/task_model.dart';
 import 'package:taskmanager/data/models/task_status_count_model.dart';
 import 'package:taskmanager/data/services/api_caller.dart';
 import 'package:taskmanager/data/utils/urls.dart';
@@ -19,12 +20,15 @@ class NewTaskScreen extends StatefulWidget {
 class _NewTaskScreenState extends State<NewTaskScreen> {
 
   bool _getTaskStatusCountProgress = false;
+  bool _getNewTaskInProgress = false;
   List<TaskStatusCountModel> _taskStatusCountList = [];
+  List<TaskModel> _newTaskList = [];
 
   @override
   void initState() {
     super.initState();
     _getAllTaskStatusCount();
+    _getNewTaskStatusCount();
   }
 
   Future<void> _getAllTaskStatusCount() async{
@@ -42,6 +46,25 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
       showSnackBar(context, response.errorMessage!);
     }
     _getTaskStatusCountProgress = false;
+    setState(() {});
+  }
+
+  Future<void> _getNewTaskStatusCount() async{
+    _getNewTaskInProgress = true;
+    setState(() {});
+    ApiResponse response = await ApiCaller.getRequest(url: Urls.newTaskUrl);
+
+    if(response.isSuccess){
+      List<TaskModel> list = [];
+      for(Map<String, dynamic> jsonData in response.responseData['data']){
+        list.add(TaskModel.fromJson(jsonData));
+      }
+      _newTaskList = list;
+      print(_newTaskList.length);
+    }else{
+      showSnackBar(context, response.errorMessage!);
+    }
+    _getNewTaskInProgress = false;
     setState(() {});
   }
 
@@ -75,14 +98,19 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
             ),
 
             Expanded(
-                child: ListView.separated(
-                  itemCount: 10,
-                  itemBuilder: (context, index){
-                    return TaskCard(title: 'New title', description: 'New description', status: 'New', color: Colors.blue,);
-                  },
-                  separatorBuilder: (context, index){
-                    return SizedBox(height: 8,);
-                  },
+                child: Visibility(
+                  visible: _getNewTaskInProgress == false,
+                  replacement: CenterProgressIndicator(),
+                  child: ListView.separated(
+                    itemCount: _newTaskList.length,
+                    itemBuilder: (context, index){
+                      return TaskCard(taskModel: _newTaskList[index]
+                      );
+                    },
+                    separatorBuilder: (context, index){
+                      return SizedBox(height: 8,);
+                    },
+                  ),
                 )
             ),
           ],

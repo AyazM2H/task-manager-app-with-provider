@@ -6,9 +6,12 @@ import 'package:taskmanager/ui/screens/splash_screen.dart';
 class TaskManager extends StatelessWidget {
   const TaskManager({super.key});
 
+  static GlobalKey<NavigatorState> navigator = GlobalKey<NavigatorState>();
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigator,
       theme: ThemeData(
         textTheme: TextTheme(
           titleLarge: TextStyle(
@@ -26,7 +29,6 @@ class TaskManager extends StatelessWidget {
           enabledBorder: OutlineInputBorder(borderSide: BorderSide.none),
           errorBorder: OutlineInputBorder(borderSide: BorderSide.none),
         ),
-
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
               backgroundColor: Colors.green,
