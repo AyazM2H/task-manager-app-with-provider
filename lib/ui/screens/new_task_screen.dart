@@ -28,7 +28,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
   void initState() {
     super.initState();
     _getAllTaskStatusCount();
-    _getNewTaskStatusCount();
+    _getNewTaskStatus('New');
   }
 
   Future<void> _getAllTaskStatusCount() async{
@@ -49,10 +49,10 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
     setState(() {});
   }
 
-  Future<void> _getNewTaskStatusCount() async{
+  Future<void> _getNewTaskStatus(String status) async{
     _getNewTaskInProgress = true;
     setState(() {});
-    ApiResponse response = await ApiCaller.getRequest(url: Urls.newTaskUrl);
+    ApiResponse response = await ApiCaller.getRequest(url: Urls.listTaskByStatusUrl(status));
 
     if(response.isSuccess){
       List<TaskModel> list = [];
@@ -60,7 +60,6 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
         list.add(TaskModel.fromJson(jsonData));
       }
       _newTaskList = list;
-      print(_newTaskList.length);
     }else{
       showSnackBar(context, response.errorMessage!);
     }
@@ -104,7 +103,9 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                   child: ListView.separated(
                     itemCount: _newTaskList.length,
                     itemBuilder: (context, index){
-                      return TaskCard(taskModel: _newTaskList[index]
+                      return TaskCard(taskModel: _newTaskList[index], refreshParent: () {
+                        _getNewTaskStatus('New');
+                      },
                       );
                     },
                     separatorBuilder: (context, index){
