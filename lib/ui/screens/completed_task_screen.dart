@@ -51,7 +51,15 @@ class _CompletedTaskScreenState extends State<CompletedTaskScreen> {
         child: Visibility(
           visible: _getCompleteTaskInProgress == false,
           replacement: CenterProgressIndicator(),
-          child: ListView.separated(
+          child: _completeTaskList.isEmpty?
+          const Center(
+            child: Text('No complete tasks found', style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey
+            ),),
+          )
+              :ListView.separated(
             itemCount: _completeTaskList.length,
             itemBuilder: (context, index){
               return TaskCard(taskModel: _completeTaskList[index], refreshParent: (){

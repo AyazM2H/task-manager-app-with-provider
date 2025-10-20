@@ -100,7 +100,15 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                 child: Visibility(
                   visible: _getNewTaskInProgress == false,
                   replacement: CenterProgressIndicator(),
-                  child: ListView.separated(
+                  child: _newTaskList.isEmpty?
+                  const Center(
+                    child: Text('No new tasks found', style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey
+                    ),),
+                  )
+                      : ListView.separated(
                     itemCount: _newTaskList.length,
                     itemBuilder: (context, index){
                       return TaskCard(taskModel: _newTaskList[index], refreshParent: () {

@@ -53,7 +53,15 @@ class _CancelTaskScreenState extends State<CancelTaskScreen> {
         child: Visibility(
           visible: _getCancelTaskInProgress == false,
           replacement: CenterProgressIndicator(),
-          child: ListView.separated(
+          child:_cancelTaskList.isEmpty?
+          const Center(
+            child: Text('No cancelled tasks found', style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey
+            ),),
+          )
+              :ListView.separated(
             itemCount: _cancelTaskList.length,
             itemBuilder: (context, index){
               return TaskCard(taskModel: _cancelTaskList[index],

@@ -50,7 +50,15 @@ class _ProgressTaskScreenState extends State<ProgressTaskScreen> {
         child: Visibility(
           visible: _getProgressTaskInProgress == false,
           replacement: CenterProgressIndicator(),
-          child: ListView.separated(
+          child: _progressTaskList.isEmpty?
+          const Center(
+            child: Text('No progress tasks found', style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey
+            ),),
+          )
+              :ListView.separated(
                 itemCount: _progressTaskList.length,
               itemBuilder: (context, index){
                   return TaskCard(taskModel: _progressTaskList[index],
