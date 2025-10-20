@@ -6,6 +6,7 @@ class Urls{
   static const String createTaskUrl = '$_baseUrl/createTask';
   static const String taskStatusCountUrl = '$_baseUrl/taskStatusCount';
   static const String updateProfileUrl = '$_baseUrl/ProfileUpdate';
+  static const String recoverPasswordUrl = '$_baseUrl/RecoverResetPassword';
 
   static String listTaskByStatusUrl(String status) =>
       '$_baseUrl/listTaskByStatus/$status';
@@ -15,6 +16,12 @@ class Urls{
 
   static String deleteUrl(String id) =>
       '$_baseUrl/deleteTask/$id';
+
+  static String recoverVerifyEmailUrl(String email) =>
+      '$_baseUrl/RecoverVerifyEmail/$email';
+
+  static String recoverVerifyOTPUrl(String email, int otp) =>
+      '$_baseUrl/RecoverVerifyOtp/$email/$otp';
 
 
 }

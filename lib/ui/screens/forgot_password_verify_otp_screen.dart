@@ -5,9 +5,14 @@ import 'package:taskmanager/ui/screens/login_screen.dart';
 import 'package:taskmanager/ui/screens/reset_password_screen.dart';
 import 'package:taskmanager/ui/widgets/screen_background.dart';
 
+import '../../data/services/api_caller.dart';
+import '../../data/utils/urls.dart';
+import '../widgets/snack_bar_msg.dart';
+
 
 class ForgotPasswordVerifyOtpScreen extends StatefulWidget {
-  const ForgotPasswordVerifyOtpScreen({super.key});
+  const ForgotPasswordVerifyOtpScreen({super.key, required this.email});
+  final String email;
 
   @override
   State<ForgotPasswordVerifyOtpScreen> createState() => _ForgotPasswordVerifyOtpScreenState();
@@ -17,6 +22,7 @@ class _ForgotPasswordVerifyOtpScreenState extends State<ForgotPasswordVerifyOtpS
 
   TextEditingController _otpTEControler = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool otpInProgress = false;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +62,7 @@ class _ForgotPasswordVerifyOtpScreenState extends State<ForgotPasswordVerifyOtpS
                 ),
 
                 const SizedBox(height: 16,),
-                FilledButton(onPressed: _onTapVerifyButton,
+                FilledButton(onPressed: _onTapVerifyOTPButton,
                     child: Text('Verify')),
                 const SizedBox(height: 32,),
 
@@ -94,13 +100,33 @@ class _ForgotPasswordVerifyOtpScreenState extends State<ForgotPasswordVerifyOtpS
         (predicate) => false,
     );
   }
-  void _onTapVerifyButton(){
-    Navigator.pushAndRemoveUntil(
-      context, MaterialPageRoute(builder: (context)=>ResetPasswordScreen()),
-          (predicate) => false,
-    );
+  void _onTapVerifyOTPButton(){
+    int otp = int.parse(_otpTEControler.text);
+    _validEmailChecker( widget.email,otp);
+
   }
 
+  Future<void> _validEmailChecker(String email, int otp) async{
+    otpInProgress = true;
+    setState(() {});
+
+    final ApiResponse response = await ApiCaller.getRequest(url: Urls.recoverVerifyOTPUrl(email, otp));
+
+    otpInProgress = false;
+    setState(() {});
+
+    if(response.isSuccess){
+      showSnackBar(context, response.responseData['data']);
+      await Navigator.pushAndRemoveUntil(
+      context, MaterialPageRoute(builder: (context)=>ResetPasswordScreen(email: email, otp: otp)),
+          (predicate) => false,
+    );
+
+    }else{
+      showSnackBar(context, response.errorMessage!);
+    }
+
+  }
 
   @override
   void dispose() {
