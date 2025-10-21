@@ -139,7 +139,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     Map<String, dynamic> requestBody ={
       "email": email,
       "OTP": otp.toString(),
-      "password": password
+      "password": password,
     };
 
     final ApiResponse response = await ApiCaller.postRequest(url: Urls.recoverPasswordUrl, body: requestBody);
@@ -147,9 +147,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     resetPasswordInProgress = false;
     setState(() {});
 
-    if(response.isSuccess){
-      showSnackBar(context, response.responseData['data']);
-      await Navigator.pushAndRemoveUntil(
+    if(response.isSuccess && response.responseData['status'] == 'success'){
+      showSnackBar(context, 'Password Reset Success');
+      Navigator.pushAndRemoveUntil(
         context, MaterialPageRoute(builder: (context)=>LoginScreen()),
             (predicate) => false,
       );

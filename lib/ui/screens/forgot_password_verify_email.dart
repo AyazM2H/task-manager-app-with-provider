@@ -102,7 +102,6 @@ class _ForgotPasswordVerifyEmailScreenState extends State<ForgotPasswordVerifyEm
       email = _emailTEControler.text.trim();
       _validEmailChecker(email);
     }
-    //Navigator.push(context, MaterialPageRoute(builder: (context)=>ForgotPasswordVerifyOtpScreen()));
   }
 
   Future<void> _validEmailChecker(String? email) async{
@@ -117,7 +116,7 @@ class _ForgotPasswordVerifyEmailScreenState extends State<ForgotPasswordVerifyEm
     if(response.isSuccess){
       _emailTEControler.clear();
       showSnackBar(context, response.responseData['data']);
-      await Navigator.push(context, MaterialPageRoute(builder: (context)=>ForgotPasswordVerifyOtpScreen(email: email)));
+      Navigator.push(context, MaterialPageRoute(builder: (context)=>ForgotPasswordVerifyOtpScreen(email: email)));
 
     }else{
       showSnackBar(context, response.errorMessage!);

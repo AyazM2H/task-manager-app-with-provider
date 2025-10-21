@@ -117,7 +117,7 @@ class _ForgotPasswordVerifyOtpScreenState extends State<ForgotPasswordVerifyOtpS
 
     if(response.isSuccess){
       showSnackBar(context, response.responseData['data']);
-      await Navigator.pushAndRemoveUntil(
+      Navigator.pushAndRemoveUntil(
       context, MaterialPageRoute(builder: (context)=>ResetPasswordScreen(email: email, otp: otp)),
           (predicate) => false,
     );
