@@ -149,7 +149,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
     if(response.isSuccess){
       showSnackBar(context, response.responseData['data']);
-      await Navigator.pushAndRemoveUntil(
+      Navigator.pushAndRemoveUntil(
         context, MaterialPageRoute(builder: (context)=>LoginScreen()),
             (predicate) => false,
       );

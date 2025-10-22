@@ -117,7 +117,7 @@ class _ForgotPasswordVerifyEmailScreenState extends State<ForgotPasswordVerifyEm
     if(response.isSuccess){
       _emailTEControler.clear();
       showSnackBar(context, response.responseData['data']);
-      await Navigator.push(context, MaterialPageRoute(builder: (context)=>ForgotPasswordVerifyOtpScreen(email: email)));
+      Navigator.push(context, MaterialPageRoute(builder: (context)=>ForgotPasswordVerifyOtpScreen(email: email)));
 
     }else{
       showSnackBar(context, response.errorMessage!);
