@@ -1,10 +1,8 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:taskmanager/data/models/user_model.dart';
-import 'package:taskmanager/data/services/api_caller.dart';
-import 'package:taskmanager/data/utils/urls.dart';
-import 'package:taskmanager/ui/controllers/auth_controller.dart';
+import 'package:provider/provider.dart';
+import 'package:taskmanager/ui/controllers/state_manager.dart';
 import 'package:taskmanager/ui/screens/main_nav_bar_holder_screen.dart';
 import 'package:taskmanager/ui/widgets/center_progress_indicator.dart';
 import 'package:taskmanager/ui/widgets/screen_background.dart';
@@ -27,87 +25,94 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController _emailTEControler = TextEditingController();
   TextEditingController _passwordTEControler = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final StateManager _stateManager = StateManager();
 
-  bool loginInProgress = false;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: ScreenBackground(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 82,),
-                Text('Get Started With', style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 24,),
-                TextFormField(
-                  controller: _emailTEControler,
-                  decoration: InputDecoration(
-                    hintText: 'Email',
-                  ),
-                    validator: (String? value){
-                      String input = value ?? '';
-                      if(EmailValidator.validate(input) == false){
-                        return 'Please enter a valid email';
+    return Provider(
+      create: (_) => _stateManager,
+      child: Scaffold(
+        body: ScreenBackground(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Form(
+              key: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 82,),
+                  Text('Get Started With', style: Theme.of(context).textTheme.titleLarge),
+                  const SizedBox(height: 24,),
+                  TextFormField(
+                    controller: _emailTEControler,
+                    decoration: InputDecoration(
+                      hintText: 'Email',
+                    ),
+                      validator: (String? value){
+                        String input = value ?? '';
+                        if(EmailValidator.validate(input) == false){
+                          return 'Please enter a valid email';
+                        }
+                        return null;
                       }
-                      return null;
-                    }
-                ),
-                const SizedBox(height: 8,),
-                TextFormField(
-                  controller: _passwordTEControler,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    hintText: 'Password',
                   ),
-                    validator: (String? value){
-                      if((value?.length ?? 0) <= 6){
-                        return 'Enter a password more than 6 letters';
+                  const SizedBox(height: 8,),
+                  TextFormField(
+                    controller: _passwordTEControler,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      hintText: 'Password',
+                    ),
+                      validator: (String? value){
+                        if((value?.length ?? 0) <= 6){
+                          return 'Enter a password more than 6 letters';
+                        }
+                        return null;
                       }
-                      return null;
+                  ),
+                  const SizedBox(height: 16,),
+                  Consumer<StateManager>(
+                    builder: (context, loginProvider, _) {
+                      return Visibility(
+                        visible:  loginProvider.loginInProgress == false,
+                        replacement: CenterProgressIndicator(),
+                        child: FilledButton(onPressed: _onTapLogindButton,
+                            child: Icon(Icons.arrow_circle_right_outlined)),
+                      );
                     }
-                ),
-                const SizedBox(height: 16,),
-                Visibility(
-                  visible:  loginInProgress == false,
-                  replacement: CenterProgressIndicator(),
-                  child: FilledButton(onPressed: _onTapLogindButton,
-                      child: Icon(Icons.arrow_circle_right_outlined)),
-                ),
-                const SizedBox(height: 32,),
+                  ),
+                  const SizedBox(height: 32,),
 
 
-                Center(
-                  child: Column(
-                    children: [
-                      TextButton(onPressed: _onTapForgotPasswordButton, child: Text('Forget Password ?',
-                        style: TextStyle(color: Colors.grey),)),
+                  Center(
+                    child: Column(
+                      children: [
+                        TextButton(onPressed: _onTapForgotPasswordButton, child: Text('Forget Password ?',
+                          style: TextStyle(color: Colors.grey),)),
 
-                      RichText(
-                        text: TextSpan(
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          text: "Don't have an account? ",
-                          children: [
-                            TextSpan(
-                              style: TextStyle(color: Colors.green),
-                              text: 'Sign up',
-                              recognizer: TapGestureRecognizer()..onTap = _onTapSignUpButton,
+                        RichText(
+                          text: TextSpan(
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600,
                             ),
-                          ]
-                        )
-                      ),
-                    ],
-                  ),
-                )
-              ],
+                            text: "Don't have an account? ",
+                            children: [
+                              TextSpan(
+                                style: TextStyle(color: Colors.green),
+                                text: 'Sign up',
+                                recognizer: TapGestureRecognizer()..onTap = _onTapSignUpButton,
+                              ),
+                            ]
+                          )
+                        ),
+                      ],
+                    ),
+                  )
+                ],
+              ),
             ),
           ),
         ),
@@ -132,31 +137,16 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async{
-    loginInProgress = true;
-    setState(() {});
-    Map<String, dynamic> requestBody = {
-      "email": _emailTEControler.text.trim(),
-      "password":_passwordTEControler.text
-    };
-    final ApiResponse response = await ApiCaller.postRequest(
-        url: Urls.loginnUrl,
-      body: requestBody
-    );
-    if(response.isSuccess && response.responseData['status'] == 'success'){
-
-      String accessToken = response.responseData['token'];
-      UserModel model = UserModel.fromJson(response.responseData['data']);
-      await AuthController.saveUserData(accessToken, model);
-
-      await Navigator.pushNamedAndRemoveUntil(
+    final bool isSuccess = await _stateManager.login(
+        _emailTEControler.text.trim(), _passwordTEControler.text);
+    if(isSuccess){
+      Navigator.pushNamedAndRemoveUntil(
           context,
           MainNavBarHolderScreen.name,
           (predicate) => false,
       );
     }else{
-      loginInProgress = false;
-      setState(() {});
-      showSnackBar(context, response.errorMessage!);
+      showSnackBar(context, _stateManager.errorMessage!);
     }
   }
 
