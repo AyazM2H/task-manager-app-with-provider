@@ -1,8 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:taskmanager/data/services/api_caller.dart';
-import 'package:taskmanager/data/utils/urls.dart';
 import 'package:taskmanager/ui/controllers/state_manager.dart';
 import 'package:taskmanager/ui/screens/login_screen.dart';
 import 'package:taskmanager/ui/widgets/center_progress_indicator.dart';

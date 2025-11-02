@@ -7,9 +7,6 @@ import 'package:taskmanager/ui/screens/login_screen.dart';
 import 'package:taskmanager/ui/screens/reset_password_screen.dart';
 import 'package:taskmanager/ui/widgets/center_progress_indicator.dart';
 import 'package:taskmanager/ui/widgets/screen_background.dart';
-
-import '../../data/services/api_caller.dart';
-import '../../data/utils/urls.dart';
 import '../widgets/snack_bar_msg.dart';
 
 

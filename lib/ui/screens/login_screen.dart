@@ -8,7 +8,6 @@ import 'package:taskmanager/ui/widgets/center_progress_indicator.dart';
 import 'package:taskmanager/ui/widgets/screen_background.dart';
 import 'package:taskmanager/ui/screens/sign_up_screen.dart';
 import 'package:taskmanager/ui/widgets/snack_bar_msg.dart';
-
 import 'forgot_password_verify_email.dart';
 
 class LoginScreen extends StatefulWidget {

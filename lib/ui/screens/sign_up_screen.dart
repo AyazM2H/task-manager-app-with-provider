@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:taskmanager/ui/controllers/state_manager.dart';
 import 'package:taskmanager/ui/widgets/screen_background.dart';
 import 'package:taskmanager/ui/widgets/snack_bar_msg.dart';
-
 import '../widgets/center_progress_indicator.dart';
 
 class SignUpScreen extends StatefulWidget {

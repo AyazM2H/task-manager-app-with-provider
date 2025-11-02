@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../../data/models/task_model.dart';
+import '../../data/models/task_status_count_model.dart';
 import '../../data/models/user_model.dart';
 import '../../data/services/api_caller.dart';
 import '../../data/utils/urls.dart';
@@ -7,13 +8,23 @@ import 'auth_controller.dart';
 
 class StateManager extends ChangeNotifier{
 
+  bool _taskStatusInProgress = false;
   bool _stateInProgress = false;
+  bool _addNewTaskInProgress = false;
+  bool _changeStatusInProgress = false;
+  bool _deleteStatusInProgress = false;
   String? _errorMessage;
-  List<TaskModel> _newTaskList = [];
+  List<TaskModel> _taskList = [];
+  List<TaskStatusCountModel> _taskStatusCountList = [];
 
+  bool get taskStatusInProgress => _taskStatusInProgress;
   bool get stateInProgress => _stateInProgress;
+  bool get addNewTaskInProgress => _addNewTaskInProgress;
+  bool get changeStatusInProgress => _changeStatusInProgress;
+  bool get deleteStatusInProgress => _deleteStatusInProgress;
   String? get errorMessage => _errorMessage;
-  List<TaskModel> get newTaskList => _newTaskList;
+  List<TaskModel> get taskList => _taskList;
+  List<TaskStatusCountModel> get taskStatusCountList => _taskStatusCountList;
 
   //sign up
   Future<bool> signUp(String email,String firstName,String lastName,String mobile,String password) async{
@@ -148,8 +159,8 @@ class StateManager extends ChangeNotifier{
   }
 
 
-  //new tasks
-  Future<bool> getNewTaskStatus(String status) async{
+  //tasks status
+  Future<bool> getTaskStatus(String status) async{
     bool isSuccess = false;
     _stateInProgress = true;
     notifyListeners();
@@ -160,13 +171,114 @@ class StateManager extends ChangeNotifier{
       for(Map<String, dynamic> jsonData in response.responseData['data']){
         list.add(TaskModel.fromJson(jsonData));
       }
-      _newTaskList = list;
+      _taskList = list;
       _errorMessage = null;
       isSuccess = true;
     }else{
       _errorMessage = response.errorMessage;
     }
     _stateInProgress = false;
+    notifyListeners();
+    return isSuccess;
+  }
+
+  //task count
+  Future<bool> getAllTaskStatusCount() async{
+    bool isSuccess = false;
+
+    _taskStatusInProgress = true;
+    notifyListeners();
+
+    ApiResponse response = await ApiCaller.getRequest(url: Urls.taskStatusCountUrl);
+
+    if(response.isSuccess){
+      List<TaskStatusCountModel> list = [];
+      for(Map<String, dynamic> jsonData in response.responseData['data']){
+        list.add(TaskStatusCountModel.formJson(jsonData));
+      }
+      _taskStatusCountList = list;
+      _errorMessage = null;
+      isSuccess = true;
+    }else{
+      _errorMessage = response.errorMessage;
+    }
+
+    _taskStatusInProgress = false;
+    notifyListeners();
+    return isSuccess;
+  }
+
+  //add new task
+  Future<bool> addNewTask(String title, String description) async{
+    bool isSuccess = false;
+
+    _addNewTaskInProgress = true;
+    notifyListeners();
+
+    Map<String, dynamic> requestBody = {
+      "title": title,
+      "description": description,
+      "status":"New"
+    };
+
+    ApiResponse response = await ApiCaller.postRequest(
+        url: Urls.createTaskUrl,
+        body: requestBody
+    );
+
+    if(response.isSuccess){
+      _errorMessage = null;
+      isSuccess = true;
+    }else {
+      _errorMessage = response.errorMessage;
+    }
+
+    _addNewTaskInProgress = false;
+    notifyListeners();
+    return isSuccess;
+  }
+
+  //change status
+  Future<bool> changeStatus(String id, String status) async{
+    bool isSuccess = false;
+
+    _changeStatusInProgress = true;
+    notifyListeners();
+
+    final ApiResponse response = await ApiCaller.getRequest(
+        url: Urls.updateTaskStatusUrl(id, status));
+
+
+    if(response.isSuccess){
+      _errorMessage = null;
+      isSuccess = true;
+    }else{
+      _errorMessage = response.errorMessage;
+    }
+
+    _changeStatusInProgress = false;
+    notifyListeners();
+    return isSuccess;
+  }
+
+  //delete task
+  Future<bool> deleteStatus(String id) async {
+    bool isSuccess = false;
+
+    _deleteStatusInProgress = true;
+    notifyListeners();
+
+    final ApiResponse response = await ApiCaller.getRequest(
+        url: Urls.deleteUrl(id));
+
+    if(response.isSuccess){
+      _errorMessage = null;
+      isSuccess = true;
+    }else{
+      _errorMessage = response.errorMessage;
+    }
+
+    _deleteStatusInProgress = false;
     notifyListeners();
     return isSuccess;
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:taskmanager/data/models/task_model.dart';
-import 'package:taskmanager/data/services/api_caller.dart';
-import 'package:taskmanager/data/utils/urls.dart';
+import 'package:taskmanager/ui/controllers/state_manager.dart';
 import 'package:taskmanager/ui/widgets/center_progress_indicator.dart';
 import 'package:taskmanager/ui/widgets/snack_bar_msg.dart';
 
@@ -17,9 +17,7 @@ class TaskCard extends StatefulWidget {
 }
 
 class _TaskCardState extends State<TaskCard> {
-  bool changeStatusInProgress = false;
-  bool deleteInProgress = false;
-  
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -52,19 +50,27 @@ class _TaskCardState extends State<TaskCard> {
                 ),
               ),
               Spacer(),
-              Visibility(
-                visible: deleteInProgress == false,
-                replacement: CenterProgressIndicator(),
-                child: IconButton(onPressed: (){
-                  _deleteStatus();
-                }, icon: Icon(Icons.delete_outline, color: Colors.grey,)),
+              Consumer<StateManager>(
+                builder: (context, deleteTaskProvider, _) {
+                  return Visibility(
+                    visible: deleteTaskProvider.deleteStatusInProgress == false,
+                    replacement: CenterProgressIndicator(),
+                    child: IconButton(onPressed: (){
+                      _deleteStatus();
+                    }, icon: Icon(Icons.delete_outline, color: Colors.grey,)),
+                  );
+                }
               ),
-              Visibility(
-                visible: changeStatusInProgress == false,
-                replacement: CenterProgressIndicator(),
-                child: IconButton(onPressed: (){
-                  _showChangeStatusDialog();
-                }, icon: Icon(Icons.edit, color: Colors.black,)),
+              Consumer<StateManager>(
+                builder: (context, changeStatusProvider, _) {
+                  return Visibility(
+                    visible: changeStatusProvider.changeStatusInProgress == false,
+                    replacement: CenterProgressIndicator(),
+                    child: IconButton(onPressed: (){
+                      _showChangeStatusDialog();
+                    }, icon: Icon(Icons.edit, color: Colors.black,)),
+                  );
+                }
               ),
 
             ],
@@ -119,40 +125,30 @@ class _TaskCardState extends State<TaskCard> {
     if(status == widget.taskModel.status) {
       return;
     }
-
     Navigator.pop(context);
 
-    changeStatusInProgress = true;
-    setState(() {});
-    
-    final ApiResponse response = await ApiCaller.getRequest(
-        url: Urls.updateTaskStatusUrl(widget.taskModel.id, status));
+    String id = widget.taskModel.id;
+    final bool isSuccess = await context.read<StateManager>().changeStatus(id, status);
 
-    changeStatusInProgress = false;
-    setState(() {});
-
-    if(response.isSuccess){
+    if(isSuccess){
+      context.read<StateManager>().getAllTaskStatusCount();
       widget.refreshParent();
     }else{
-      showSnackBar(context, response.errorMessage!);
+      showSnackBar(context, context.read<StateManager>().errorMessage!);
     }
     
   }
   
   Future<void> _deleteStatus() async {
-    deleteInProgress = true;
-    setState(() {});
-    
-    final ApiResponse response = await ApiCaller.getRequest(
-        url: Urls.deleteUrl(widget.taskModel.id));
+    String id = widget.taskModel.id;
+    final bool isSuccess = await context.read<StateManager>().deleteStatus(id);
 
-    deleteInProgress = false;
-    setState(() {});
 
-    if(response.isSuccess){
+    if(isSuccess){
+      context.read<StateManager>().getAllTaskStatusCount();
       widget.refreshParent();
     }else{
-      showSnackBar(context, response.errorMessage!);
+      showSnackBar(context, context.read<StateManager>().errorMessage!);
     }
   }
 }

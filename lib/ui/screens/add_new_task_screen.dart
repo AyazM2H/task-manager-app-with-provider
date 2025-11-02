@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:taskmanager/data/services/api_caller.dart';
-import 'package:taskmanager/data/utils/urls.dart';
 import 'package:taskmanager/ui/controllers/state_manager.dart';
 import 'package:taskmanager/ui/widgets/center_progress_indicator.dart';
 import 'package:taskmanager/ui/widgets/screen_background.dart';
@@ -20,10 +18,11 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
   TextEditingController _titleTEController = TextEditingController();
   TextEditingController _descriptionTEController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  bool addNewTaskInProgress = false;
+  late final StateManager _addNewTaskProvider;
 
   @override
   Widget build(BuildContext context) {
+    _addNewTaskProvider = context.read<StateManager>();
     return Scaffold(
       appBar: TMAppBar(),
       body: ScreenBackground(
@@ -67,10 +66,14 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
                     },
                   ),
                   const SizedBox(height: 16,),
-                  Visibility(
-                      visible: addNewTaskInProgress == false,
-                      replacement: CenterProgressIndicator(),
-                      child: FilledButton(onPressed: _onTapAddButton, child: Text('Add')))
+                  Consumer<StateManager>(
+                    builder: (context, addNewTaskProvider, _) {
+                      return Visibility(
+                          visible: addNewTaskProvider.addNewTaskInProgress == false,
+                          replacement: CenterProgressIndicator(),
+                          child: FilledButton(onPressed: _onTapAddButton, child: Text('Add')));
+                    }
+                  )
                 ],
               ),
             ),
@@ -87,26 +90,16 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
   }
 
   Future<void> _addNewTsk() async{
-    addNewTaskInProgress = true;
-    setState(() {});
-    Map<String, dynamic> requestBody = {
-      "title": _titleTEController.text.trim(),
-      "description": _descriptionTEController.text.trim(),
-      "status":"New"
-    };
-    
-    ApiResponse response = await ApiCaller.postRequest(
-      url: Urls.createTaskUrl,
-      body: requestBody
-    );
-    addNewTaskInProgress = false;
-    setState(() {});
-    if(response.isSuccess){
-      context.read<StateManager>().getNewTaskStatus('New');
+    final bool isSuccess = await _addNewTaskProvider.addNewTask(
+        _titleTEController.text.trim(),
+        _descriptionTEController.text.trim());
+    if(isSuccess){
+      context.read<StateManager>().getAllTaskStatusCount();
+      context.read<StateManager>().getTaskStatus('New');
       _clearTextFields();
       showSnackBar(context, 'New task has been added');
     }else {
-      showSnackBar(context, response.errorMessage!);
+      showSnackBar(context, _addNewTaskProvider.errorMessage!);
     }
   }
 

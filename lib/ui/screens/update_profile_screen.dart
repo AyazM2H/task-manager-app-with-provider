@@ -9,7 +9,6 @@ import 'package:taskmanager/ui/widgets/center_progress_indicator.dart';
 import 'package:taskmanager/ui/widgets/screen_background.dart';
 import 'package:taskmanager/ui/widgets/snack_bar_msg.dart';
 import 'package:taskmanager/ui/widgets/tm_app_bar.dart';
-
 import '../widgets/photo_picker_field.dart';
 
 class UpdateProfileScreen extends StatefulWidget {

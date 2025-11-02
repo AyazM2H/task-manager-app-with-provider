@@ -4,7 +4,6 @@ import 'package:taskmanager/ui/controllers/auth_controller.dart';
 import 'package:taskmanager/ui/screens/main_nav_bar_holder_screen.dart';
 import 'package:taskmanager/ui/widgets/screen_background.dart';
 import 'package:taskmanager/ui/utils/asset_paths.dart';
-
 import 'login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
