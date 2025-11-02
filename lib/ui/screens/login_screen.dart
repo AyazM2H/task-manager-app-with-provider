@@ -30,7 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Provider(
+    return ChangeNotifierProvider(
       create: (_) => _stateManager,
       child: Scaffold(
         body: ScreenBackground(
@@ -76,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Consumer<StateManager>(
                     builder: (context, loginProvider, _) {
                       return Visibility(
-                        visible:  loginProvider.loginInProgress == false,
+                        visible:  loginProvider.stateInProgress == false,
                         replacement: CenterProgressIndicator(),
                         child: FilledButton(onPressed: _onTapLogindButton,
                             child: Icon(Icons.arrow_circle_right_outlined)),

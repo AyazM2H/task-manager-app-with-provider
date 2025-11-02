@@ -1,8 +1,8 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:taskmanager/data/services/api_caller.dart';
-import 'package:taskmanager/data/utils/urls.dart';
+import 'package:provider/provider.dart';
+import 'package:taskmanager/ui/controllers/state_manager.dart';
 import 'package:taskmanager/ui/widgets/screen_background.dart';
 import 'package:taskmanager/ui/widgets/snack_bar_msg.dart';
 
@@ -23,11 +23,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController _mobileTEControler = TextEditingController();
   TextEditingController _passwordTEControler = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  bool signUpInProgress = false;
+  late final StateManager _signUpProvider;
 
   @override
   Widget build(BuildContext context) {
+    _signUpProvider = context.read<StateManager>();
     return Scaffold(
       body: ScreenBackground(
         child: SingleChildScrollView(
@@ -115,11 +115,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       }
                   ),
                   const SizedBox(height: 16,),
-                  Visibility(
-                    visible: signUpInProgress == false,
-                    replacement: CenterProgressIndicator(),
-                    child: FilledButton(onPressed: _0nTapSubmitButton,
-                        child: Icon(Icons.arrow_circle_right_outlined)),
+                  Consumer<StateManager>(
+                    builder: (context, signUpProvider, _) {
+                      return Visibility(
+                        visible: signUpProvider.stateInProgress == false,
+                        replacement: CenterProgressIndicator(),
+                        child: FilledButton(onPressed: _0nTapSubmitButton,
+                            child: Icon(Icons.arrow_circle_right_outlined)),
+                      );
+                    }
                   ),
                   const SizedBox(height: 32,),
           
@@ -161,29 +165,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Future<void> _signUp() async{
-    signUpInProgress = true;
-    setState(() {});
-    Map<String, dynamic> requestBody = {
-      "email":_emailTEControler.text.trim(),
-      "firstName":_fnameTEControler.text.trim(),
-      "lastName":_lnameTEControler.text.trim(),
-      "mobile":_mobileTEControler.text.trim(),
-      "password":_passwordTEControler.text
-    };
-
-    final ApiResponse response = await ApiCaller.postRequest(
-      url: Urls.regitrationUrl,
-      body: requestBody
-    );
-    signUpInProgress = false;
-    setState(() {});
-    if(response.isSuccess){
+    final bool isSuccess = await _signUpProvider.signUp(
+        _emailTEControler.text.trim(),
+        _fnameTEControler.text.trim(),
+        _lnameTEControler.text.trim(),
+        _mobileTEControler.text.trim(),
+        _passwordTEControler.text);
+    if(isSuccess){
       _clearTextField();
       showSnackBar(context, 'Registration success! Please login.');
     } else{
-      showSnackBar(context, response.errorMessage!);
+      showSnackBar(context, _signUpProvider.errorMessage!);
     }
   }
+
   void _clearTextField(){
     _emailTEControler.clear();
     _fnameTEControler.clear();

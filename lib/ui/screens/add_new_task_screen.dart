@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:taskmanager/data/services/api_caller.dart';
 import 'package:taskmanager/data/utils/urls.dart';
+import 'package:taskmanager/ui/controllers/state_manager.dart';
 import 'package:taskmanager/ui/widgets/center_progress_indicator.dart';
 import 'package:taskmanager/ui/widgets/screen_background.dart';
 import 'package:taskmanager/ui/widgets/snack_bar_msg.dart';
@@ -100,6 +102,7 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
     addNewTaskInProgress = false;
     setState(() {});
     if(response.isSuccess){
+      context.read<StateManager>().getNewTaskStatus('New');
       _clearTextFields();
       showSnackBar(context, 'New task has been added');
     }else {

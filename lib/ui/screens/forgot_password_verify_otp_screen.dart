@@ -1,8 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:provider/provider.dart';
+import 'package:taskmanager/ui/controllers/state_manager.dart';
 import 'package:taskmanager/ui/screens/login_screen.dart';
 import 'package:taskmanager/ui/screens/reset_password_screen.dart';
+import 'package:taskmanager/ui/widgets/center_progress_indicator.dart';
 import 'package:taskmanager/ui/widgets/screen_background.dart';
 
 import '../../data/services/api_caller.dart';
@@ -22,10 +25,11 @@ class _ForgotPasswordVerifyOtpScreenState extends State<ForgotPasswordVerifyOtpS
 
   TextEditingController _otpTEControler = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  bool otpInProgress = false;
+  late final StateManager _verifyOtpProvider;
 
   @override
   Widget build(BuildContext context) {
+    _verifyOtpProvider = context.read<StateManager>();
     return Scaffold(
       body: ScreenBackground(
         child: Padding(
@@ -62,8 +66,16 @@ class _ForgotPasswordVerifyOtpScreenState extends State<ForgotPasswordVerifyOtpS
                 ),
 
                 const SizedBox(height: 16,),
-                FilledButton(onPressed: _onTapVerifyOTPButton,
-                    child: Text('Verify')),
+                Consumer<StateManager>(
+                  builder: (context, otpProvider, _) {
+                    return Visibility(
+                      visible: otpProvider.stateInProgress == false,
+                      replacement: CenterProgressIndicator(),
+                      child: FilledButton(onPressed: _onTapVerifyOTPButton,
+                          child: Icon(Icons.arrow_circle_right_outlined)),
+                    );
+                  }
+                ),
                 const SizedBox(height: 32,),
 
 
@@ -101,29 +113,31 @@ class _ForgotPasswordVerifyOtpScreenState extends State<ForgotPasswordVerifyOtpS
     );
   }
   void _onTapVerifyOTPButton(){
-    int otp = int.parse(_otpTEControler.text);
-    _validEmailChecker( widget.email,otp);
+    if (_otpTEControler.text.trim().length != 6) {
+      showSnackBar(context, 'Please enter a valid 6-digit OTP');
+      return;
+    }
+
+    final otp = int.tryParse(_otpTEControler.text.trim());
+    if (otp == null) {
+      showSnackBar(context, 'OTP must be numbers only');
+      return;
+    }
+    _validOTPChecker( widget.email,otp);
 
   }
 
-  Future<void> _validEmailChecker(String email, int otp) async{
-    otpInProgress = true;
-    setState(() {});
+  Future<void> _validOTPChecker(String email, int otp) async{
+    final bool isSuccess = await _verifyOtpProvider.validOTPChecker(email, otp);
 
-    final ApiResponse response = await ApiCaller.getRequest(url: Urls.recoverVerifyOTPUrl(email, otp));
-
-    otpInProgress = false;
-    setState(() {});
-
-    if(response.isSuccess){
-      showSnackBar(context, response.responseData['data']);
+    if(isSuccess){
       Navigator.pushAndRemoveUntil(
       context, MaterialPageRoute(builder: (context)=>ResetPasswordScreen(email: email, otp: otp)),
           (predicate) => false,
     );
 
     }else{
-      showSnackBar(context, response.errorMessage!);
+      showSnackBar(context, _verifyOtpProvider.errorMessage!);
     }
 
   }
