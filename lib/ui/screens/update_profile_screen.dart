@@ -1,10 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:taskmanager/data/models/user_model.dart';
-import 'package:taskmanager/data/services/api_caller.dart';
-import 'package:taskmanager/data/utils/urls.dart';
 import 'package:taskmanager/ui/controllers/auth_controller.dart';
+import 'package:taskmanager/ui/controllers/state_manager.dart';
 import 'package:taskmanager/ui/widgets/center_progress_indicator.dart';
 import 'package:taskmanager/ui/widgets/screen_background.dart';
 import 'package:taskmanager/ui/widgets/snack_bar_msg.dart';
@@ -132,12 +131,16 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
 
                   ),
                   const SizedBox(height: 16,),
-                  Visibility(
-                    visible: updateProfileInProgress == false,
-                    replacement: CenterProgressIndicator(),
-                    child: FilledButton(
-                        onPressed: _onTapUpdateButton,
-                        child: Icon(Icons.arrow_circle_right_outlined)),
+                  Consumer<StateManager>(
+                    builder: (context, updateProfileProvider, _) {
+                      return Visibility(
+                        visible: updateProfileProvider.updateProfileInProgress == false,
+                        replacement: CenterProgressIndicator(),
+                        child: FilledButton(
+                            onPressed: _onTapUpdateButton,
+                            child: Icon(Icons.arrow_circle_right_outlined)),
+                      );
+                    }
                   ),
                   const SizedBox(height: 32,)
                 ],
@@ -167,52 +170,20 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   }
 
   Future<void> _updateProfile() async{
-    updateProfileInProgress = true;
-    setState(() {});
+    final bool isSuccess = await context.read<StateManager>().updateProfile(
+        _emailTEControler.text,
+        _fnameTEControler.text.trim(),
+        _lnameTEControler.text.trim(),
+        _mobileTEControler.text.trim(),
+        _passwordTEControler.text,
+        _selestedImage);
 
-    Map<String, dynamic> requestBody = {
-      "email": _emailTEControler.text,
-      "firstName": _fnameTEControler.text.trim(),
-      "lastName":_lnameTEControler.text.trim(),
-      "mobile":_mobileTEControler.text.trim(),
-    };
-
-    if(_passwordTEControler.text.isNotEmpty){
-      requestBody['password'] = _passwordTEControler.text;
-    }
-
-    String? encodedPhoto;
-
-    if(_selestedImage != null){
-      List<int> bytes = await _selestedImage!.readAsBytes();
-      encodedPhoto = jsonEncode(bytes);
-      requestBody['photo'] = encodedPhoto;
-    }
-
-    ApiResponse response = await ApiCaller.postRequest(
-        url: Urls.updateProfileUrl, body: requestBody);
-
-    updateProfileInProgress = false;
-    setState(() {});
-
-    if(response.isSuccess){
+    if(isSuccess){
       _passwordTEControler.clear();
-
-      UserModel model = UserModel(
-          id: AuthController.userModel!.id,
-          email: _emailTEControler.text,
-          firstName: _fnameTEControler.text.trim(),
-          lastName: _lnameTEControler.text.trim(),
-          mobile: _mobileTEControler.text.trim(),
-        photo: encodedPhoto ?? AuthController.userModel!.photo,
-
-      );
-
-      await AuthController.updateUserData(model);
       showSnackBar(context, 'Profile has been updated!');
 
     }else{
-      showSnackBar(context, response.errorMessage!);
+      showSnackBar(context, context.read<StateManager>().errorMessage!);
     }
 
   }

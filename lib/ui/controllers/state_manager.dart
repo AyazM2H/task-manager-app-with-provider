@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../data/models/task_model.dart';
 import '../../data/models/task_status_count_model.dart';
 import '../../data/models/user_model.dart';
@@ -13,18 +16,33 @@ class StateManager extends ChangeNotifier{
   bool _addNewTaskInProgress = false;
   bool _changeStatusInProgress = false;
   bool _deleteStatusInProgress = false;
+  bool _updateProfileInProgress = false;
   String? _errorMessage;
   List<TaskModel> _taskList = [];
   List<TaskStatusCountModel> _taskStatusCountList = [];
+  UserModel? _user;
 
   bool get taskStatusInProgress => _taskStatusInProgress;
   bool get stateInProgress => _stateInProgress;
   bool get addNewTaskInProgress => _addNewTaskInProgress;
   bool get changeStatusInProgress => _changeStatusInProgress;
   bool get deleteStatusInProgress => _deleteStatusInProgress;
+  bool get updateProfileInProgress => _updateProfileInProgress;
   String? get errorMessage => _errorMessage;
   List<TaskModel> get taskList => _taskList;
   List<TaskStatusCountModel> get taskStatusCountList => _taskStatusCountList;
+  UserModel? get user => _user;
+
+  //appbar name updater
+  void setUser(UserModel user){
+    _user = user;
+    notifyListeners();
+  }
+
+  void clearUser() {
+    _user = null;
+    notifyListeners();
+  }
 
   //sign up
   Future<bool> signUp(String email,String firstName,String lastName,String mobile,String password) async{
@@ -76,6 +94,8 @@ class StateManager extends ChangeNotifier{
     if(response.isSuccess && response.responseData['status'] == 'success'){
       String accessToken = response.responseData['token'];
       UserModel model = UserModel.fromJson(response.responseData['data']);
+
+      await AuthController.clearUserData();
       await AuthController.saveUserData(accessToken, model);
 
       _errorMessage = null;
@@ -279,6 +299,58 @@ class StateManager extends ChangeNotifier{
     }
 
     _deleteStatusInProgress = false;
+    notifyListeners();
+    return isSuccess;
+  }
+
+  //update profile
+  Future<bool> updateProfile(String email, String firstName, String lastName, String mobile, String ? password, XFile ? photo) async{
+    bool isSuccess = false;
+
+    _updateProfileInProgress = true;
+    notifyListeners();
+
+    Map<String, dynamic> requestBody = {
+      "email": email,
+      "firstName": firstName,
+      "lastName": lastName,
+      "mobile": mobile,
+    };
+
+    if(password != null){
+      requestBody['password'] = password;
+    }
+
+    String? encodedPhoto;
+
+    if(photo != null){
+      List<int> bytes = await photo.readAsBytes();
+      encodedPhoto = jsonEncode(bytes);
+      requestBody['photo'] = encodedPhoto;
+    }
+
+    ApiResponse response = await ApiCaller.postRequest(
+        url: Urls.updateProfileUrl, body: requestBody);
+
+    if(response.isSuccess){
+      UserModel model = UserModel(
+        id: AuthController.userModel!.id,
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
+        mobile: mobile,
+        photo: encodedPhoto ?? AuthController.userModel!.photo,
+      );
+
+      await AuthController.updateUserData(model);
+      setUser(model);
+      _errorMessage = null;
+      isSuccess = true;
+    }else{
+      _errorMessage = response.errorMessage;
+    }
+
+    _updateProfileInProgress = false;
     notifyListeners();
     return isSuccess;
   }

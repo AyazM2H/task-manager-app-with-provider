@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:taskmanager/ui/controllers/auth_controller.dart';
+import 'package:taskmanager/ui/controllers/state_manager.dart';
 import 'package:taskmanager/ui/screens/login_screen.dart';
 import 'package:taskmanager/ui/screens/update_profile_screen.dart';
 
@@ -23,7 +25,9 @@ class TMAppBar extends StatefulWidget implements PreferredSizeWidget {
 class _TMAppBarState extends State<TMAppBar> {
   @override
   Widget build(BuildContext context) {
-    final profilePhoto = AuthController.userModel!.photo;
+    //final profilePhoto = AuthController.userModel!.photo;
+    final user = context.watch<StateManager>().user ?? AuthController.userModel!;
+    final profilePhoto = user.photo;
     return AppBar(
       backgroundColor: Colors.green,
       title: GestureDetector(
@@ -46,7 +50,7 @@ class _TMAppBarState extends State<TMAppBar> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(AuthController.userModel?.fullName ?? '', style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                Text(user.fullName, style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     color: Colors.white
                 )),
                 Text(AuthController.userModel!.email, style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -63,6 +67,7 @@ class _TMAppBarState extends State<TMAppBar> {
   }
 
   Future<void> _signOut() async{
+    context.read<StateManager>().clearUser();
     await AuthController.clearUserData();
     Navigator.pushNamedAndRemoveUntil(context, LoginScreen.name, (predicate) => false);
   }
